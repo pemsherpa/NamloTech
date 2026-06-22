@@ -11,22 +11,59 @@ print(content)
 file.close()
 
 
-# Simple Expense Tracker
+# Simple Expense Tracker using Exception Handling, Decorators, File Handling
 
 class ExpenseTracker:
     def __init__(self):
         self.expenses = []
+        self.load_expenses()
+
+    def load_expenses(self):
+        try:
+            with open("expenses.txt", "r") as file:
+                for line in file:
+                    amount, category = line.strip().split(",")
+                    self.expenses.append((float(amount), category))
+        except FileNotFoundError:
+            print("No previous expenses found. Starting fresh.")
+
+    def save_expenses(self):
+        with open("expenses.txt", "w") as file:
+            for amount, category in self.expenses:
+                file.write(f"{amount},{category}\n")
 
     def add_expense(self, amount, category):
-        self.expenses.append({"amount": amount, "category": category})
+        if amount <= 0:
+            raise ValueError("Amount must be positive.")
+        self.expenses.append((amount, category))
+        self.save_expenses()
 
-    def total_expenses(self):
-        return sum(expense["amount"] for expense in self.expenses)
+    def view_expenses(self):
+        if not self.expenses:
+            print("No expenses recorded.")
+            return
+        for amount, category in self.expenses:
+            print(f"Amount: {amount}, Category: {category}")
+            print("-" * 30)
 
-    def expenses_by_category(self, category):
-        return sum(expense["amount"] for expense in self.expenses if expense["category"] == category)
-    
-tracker = ExpenseTracker()
-tracker.add_expense(50, "Food")
-tracker.add_expense(20, "Transport")
-tracker.add_expense(30, "Food")
+s1 = ExpenseTracker()
+while True:
+    print("1. Add Expense")
+    print("2. View Expenses")
+    print("3. Exit")
+    choice = input("Enter your choice: ")
+
+    if choice == "1":
+        try:
+            amount = float(input("Enter amount: "))
+            category = input("Enter category: ")
+            s1.add_expense(amount, category)
+            print("Expense added successfully.")
+        except ValueError as e:
+            print(f"Error: {e}")
+    elif choice == "2":
+        s1.view_expenses()
+    elif choice == "3":
+        break
+    else:
+        print("Invalid choice. Please try again.")
